@@ -1,64 +1,66 @@
+#include <iomanip>
 #include <iostream>
 #include <string>
 using namespace std;
 
-
-/*
-current issues:
-- array reference parameters (passing 2d arrays and array-pointer duality??..)
-- char array?? problems with char and string conversions
-- no tests have been done...
-*/
-
 const int ROW = 5;
 const int COL = 5;
-string knight = "N";
+std::string knight = "N";
 int valid_moves = 0;
 
-void print_board(std::string *board, int row, int col){ //array pointer duality valid here??
-    for (int i = 0; i < row; i++){
-        for (int j = 0; j < col; j++){
-            board[i][j] = "0";
-        }
+void print_board(std::string board[][COL], int row, int col) {
+  for (int i = 0; i < row; i++) {
+    std::cout << "\n";
+    for (int j = 0; j < col; j++) {
+      std::cout << setw(3) << board[i][j];
     }
+  }
 }
 
-void solve(std::string *board, int row, int col, bool &solved, int goal){
-    //if all have been visited: we are done (all visted when 5x5 = 25 valid moves are made?)
-    //else if we're in a wall (outside the board) or a path we've hit: go back
-    //else try to solve recursively by going in each of the possible L shapes (2,1)(1,2) sequence
-    if (valid_moves == goal){
-        solved = true;
-        return;
-    }
-    if (row >= ROW || col >= COL || board[row][col] == knight || board[row][col] != "0"){
-        return;
-    }
+void solve(std::string board[][COL], int row, int col, bool &solved, int goal,
+           int move) {
+  if (valid_moves > goal) {
+    solved = true;
+    return;
+  }
+  if (row > ROW - 1 || row < 0 || col > COL - 1 || col < 0 ||
+      (board[row][col] == knight && valid_moves < 26) ||
+      board[row][col] != "0") {
+    return;
+  }
 
-    board[row][col] = knight;
-    print_board(board, ROW, COL);
+  board[row][col] = to_string(valid_moves++);
 
-    if (!solved) solve(board, row+1, col + 2, solved, goal); //(1,2)
-    if (!solved) solve(board, row+2, col + 1, solved, goal); //(2,1)
-    if (!solved) solve(board, row-1, col - 2, solved, goal);
-    if (!solved) solve(board, row-2, col - 1, solved, goal);
-    if (!solved){ //visted
-        board[row][col] = char(valid_moves + 1); //doesnt work when i do to_string... but array is intialized as strings???
-        valid_moves = valid_moves + 1;
-    }
+  if (!solved) {
+    solve(board, row + 1, col + 2, solved, goal, 1); //(1,2)
+    solve(board, row + 1, col - 2, solved, goal, 2); //(1,2)
+    solve(board, row + 2, col + 1, solved, goal, 3); //(2,1)
+    solve(board, row + 2, col - 1, solved, goal, 4);
+    solve(board, row - 1, col + 2, solved, goal, 5);
+    solve(board, row - 1, col - 2, solved, goal, 6);
+    solve(board, row - 2, col + 1, solved, goal, 7);
+    solve(board, row - 2, col - 1, solved, goal, 8);
+  }
+
+  // implement if visted feature where if the move wasnt solved then to remove
+  // the previous number (backtrack) -- if no progress today post on zulip for
+  // class and zamansky to review
 }
 
-int main(){
-    std::string board[ROW][COL];
-    //set all to 0 (unvisited)
-    for (int i = 0; i < ROW; i++){
-        for (int j = 0; j < COL; j++){
-            board[i][j] = "0";
-        }
+int main() {
+  std::string board[ROW][COL]; // create board
+  // set all to 0 (unvisited)
+  for (int i = 0; i < ROW; i++) {
+    for (int j = 0; j < COL; j++) {
+      board[i][j] = "0";
     }
-    int goal = ROW * COL;
-    bool solved = false;
-    print_board(*board, ROW, COL);
-    solve(*board, 0, 0, solved, goal); //start at (0,0)
-
+  }
+  int goal = ROW * COL;
+  bool solved = false;
+  std::cout << "Starting Knights Board: \n";
+  print_board(board, ROW, COL);
+  std::cout << "\n-------------------\nSolved Knights Board";
+  solve(board, 0, 0, solved, goal, 0); // start at (0,0)
+  print_board(board, ROW, COL);
+  return 0;
 }
