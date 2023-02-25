@@ -2,8 +2,6 @@
 
 * Due Mon 2/27/23 8:00 AM
 
-
-
 * Folder and files
 
 - solve one of the three problems below using the basic guidelines in
